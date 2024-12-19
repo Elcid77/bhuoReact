@@ -1,51 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
+import { useContext } from 'react';
+import { cartContext } from '../context/cartContext';
 
-function ItemCount({ stock = 10, initial = 0, onAdd }) {
-    const [count, setCount] = useState(initial);
+function ItemCount({detail}) {
 
-    const handleAdd = () => {
-        if (count < stock) {
-            setCount(count + 1);
-        }
-    };
 
-    const handleSubtract = () => {
-        if (count > 0) {
-            setCount(count - 1);
-        }
-    };
-
+    const [count, setCount] = useState(0)
+    const {addToCart}=useContext(cartContext)
+    
+    const handleAdd = () => setCount(count + 1)
+    const handleSub = () => setCount(count - 1)
+    const handleAddToCart=()=>{
+        addToCart({...detail, qty: count})
+    }
     return (
         <div
-            className="d-flex flex-column align-items-center border p-3"
-            style={{ width: 300, backgroundColor: "#f8f9fa", borderRadius: "8px" }}
+            className='d-flex flex-column'
+            style={{ width: 300 }}
         >
-            <p className="text-center">{count}</p>
-            <div className="d-flex justify-content-between w-100 mb-2">
+            <p className='text-center border'>{count}</p>
+            <div>
                 <Button
-                    variant="danger"
-                    className="w-50 me-2"
-                    onClick={handleSubtract}
+                    variant='danger'
+                    className='w-50'
+                    onClick={handleSub}
                 >
                     -
                 </Button>
                 <Button
-                    variant="success"
-                    className="w-50 ms-2"
+                    variant=' success'
+                    className='w-50'
                     onClick={handleAdd}
                 >
                     +
                 </Button>
             </div>
-            <Button
-                variant="primary"
-                onClick={() => onAdd(count)}
-            >
-                Agregar al carrito
-            </Button>
-        </div>
-    );
-}
+            <Button onClick={handleAddToCart}>Agregar al Carrito</Button>
+            </div>
+            )
 
-export default ItemCount;
+}
+            export default ItemCount;

@@ -1,56 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import { connectFirestoreEmulator } from 'firebase/firestore';
+import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
+import { cartContext } from '../context/cartContext';
+import { getProducts, getFilter } from '../firebase/db';
+import {PropagateLoader} from 'react-spinners'
 import ItemList from './ItemList';
 
-const categoryMap = {
-    'novela-historica': 'historical_fiction',
-    'romantica': 'romance',
-    'ciencia-ficcion': 'science_fiction',
-    'distopia': 'dystopian',
-    'aventuras': 'adventure',
-    'fantasia': 'fantasy',
-};
+
 
 function ItemListContainer() {
-    const { id: categoryId } = useParams();
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState([]);
+  const { id } = useParams();
+  const value = useContext(cartContext)
+  console.log(value)
+  useEffect(() => {
+    getProducts()
+    id ? getFilter(id, setItems) : getProducts(setItems)
 
-    useEffect(() => {
-        const fetchBooks = async () => {
-            setLoading(true);
-            try {
-                const categoryKey = categoryMap[categoryId] || 'fiction';
-                const response = await fetch(`https://openlibrary.org/subjects/${categoryKey}.json?limit=10`);
-                if (!response.ok) throw new Error('Error al obtener datos');
-                const data = await response.json();
+  }, [id])
 
-                const books = data.works.map(book => ({
-                    id: book.key,
-                    title: book.title,
-                    description: book.description || 'Sin descripción disponible',
-                    cover: book.cover_id
-                        ? `https://covers.openlibrary.org/b/id/${book.cover_id}-M.jpg`
-                        : '/placeholder.jpg',
-                }));
+  if(items.length==0){
+    return(
+      <PropagateLoader/>
+    )
+    }
 
-                setItems(books);
-            } catch (error) {
-                console.error('Error al cargar libros:', error);
-                setItems([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+  return (
 
-        fetchBooks();
-    }, [categoryId]);
-
-    return (
-        <div>
-            {loading ? <p>Cargando productos...</p> : <ItemList items={items} />}
-        </div>
-    );
+    <ItemList items={items} />
+  )
 }
 
 export default ItemListContainer;
